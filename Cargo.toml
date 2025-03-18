@@ -1,0 +1,14 @@
+[package]
+name = "fsw-wasm-rust"
+description = "使用Rust的构建的WebAssembly，用于实现敏感词识别及过滤的DFA"
+version = "0.1.0"
+authors = ["liuwy <liuwenyu1937@outlook.com>"]
+keywords = ["wasm-pack", "WebAssembly", "wasm", ""]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2.99"
+encoding_rs_io = "0.1"
