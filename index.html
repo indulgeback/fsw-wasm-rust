@@ -4,276 +4,275 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>敏感词检测器 (测试版)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .section {
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 5px;
-    }
-
-    #result,
-    .test-result {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-
-    textarea {
-      width: 100%;
-    }
-
-    button {
-      padding: 8px 15px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .success {
-      color: green;
-    }
-
-    .failure {
-      color: red;
-    }
-
-    .test-panel {
-      background-color: #f5f5f5;
-      padding: 15px;
-      margin-top: 20px;
-      border-radius: 5px;
-    }
-
-    h2 {
-      margin-top: 30px;
-    }
-  </style>
+  <title>敏感词检测器</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-  <div class="container">
-    <h1>敏感词检测工具</h1>
+  <div class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+  </div>
 
-    <div class="section">
-      <h3>敏感词库</h3>
-      <textarea id="sensitiveWords" rows="5" placeholder="输入敏感词，每行一个词...">
-</textarea>
-      <div>
-        <button id="loadPolitical">加载政治类敏感词</button>
-        <button id="loadWeapons">加载涉枪涉爆敏感词</button>
-        <button id="loadPorn">加载色情类敏感词</button>
-        <button id="loadAds">加载广告敏感词</button>
-        <button id="loadWebsites">加载网站敏感词</button>
+  <div class="wave-container">
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>FSW-WASM-RUST</h1>
+      <p>基于WebAssembly和DFA算法的高性能敏感词工具包</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-shield-alt"></i>
+        <h2>敏感词库</h2>
+      </div>
+
+      <div class="category-tabs">
+        <div class="category-tab active" data-category="all">全部</div>
+        <div class="category-tab" data-category="political">政治类</div>
+        <div class="category-tab" data-category="weapons">涉枪涉爆</div>
+        <div class="category-tab" data-category="porn">色情类</div>
+        <div class="category-tab" data-category="ads">广告</div>
+        <div class="category-tab" data-category="websites">网站</div>
+      </div>
+
+      <div class="form-group">
+        <label for="sensitiveWords">敏感词列表（每行一个）</label>
+        <textarea id="sensitiveWords" rows="6" placeholder="输入敏感词，每行一个..."></textarea>
+      </div>
+
+      <div class="button-group">
+        <button id="loadPolitical" class="btn-outline">
+          <i class="fas fa-gavel"></i>加载政治类敏感词
+        </button>
+        <button id="loadWeapons" class="btn-outline">
+          <i class="fas fa-bomb"></i>加载涉枪涉爆敏感词
+        </button>
+        <button id="loadPorn" class="btn-outline">
+          <i class="fas fa-exclamation-triangle"></i>加载色情类敏感词
+        </button>
+        <button id="loadAds" class="btn-outline">
+          <i class="fas fa-ad"></i>加载广告敏感词
+        </button>
+        <button id="loadWebsites" class="btn-outline">
+          <i class="fas fa-globe"></i>加载网站敏感词
+        </button>
       </div>
     </div>
 
-    <div class="section">
-      <h3>待检测文本</h3>
-      <textarea id="textToCheck" rows="5" placeholder="输入要检查的文本..."></textarea>
-      <button id="checkButton">检查文本</button>
-      <div id="result"></div>
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-search"></i>
+        <h2>文本检测</h2>
+      </div>
+
+      <div class="form-group">
+        <label for="textToCheck">待检测文本</label>
+        <textarea id="textToCheck" rows="6" placeholder="输入要检查的文本..."></textarea>
+      </div>
+
+      <div class="button-group">
+        <button id="checkButton" class="btn-primary">
+          <i class="fas fa-check-circle"></i>检查文本
+        </button>
+        <button id="clearButton" class="btn-outline">
+          <i class="fas fa-trash"></i>清空
+        </button>
+      </div>
+
+      <div id="result" class="result hidden"></div>
+      <div id="highlightedResult" class="form-group hidden">
+        <label>标记的结果：</label>
+        <div id="highlightedContent" class="form-group"
+          style="padding: 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); background-color: white;">
+        </div>
+      </div>
     </div>
 
-    <h2>函数测试面板</h2>
-    <div class="test-panel">
-      <h3>测试 create_dfa 函数</h3>
-      <button id="testCreateDfa">测试创建DFA</button>
-      <div id="createDfaResult" class="test-result"></div>
+    <div class="test-section">
+      <h2>API测试</h2>
+      <div class="test-cards">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-cogs"></i>
+            <h2>创建DFA</h2>
+          </div>
+          <div class="form-group">
+            <button id="testCreateDfa" class="btn-primary">测试创建DFA</button>
+            <div id="createDfaResult" class="result hidden"></div>
+          </div>
+        </div>
 
-      <h3>测试 add_sensitive_word 函数</h3>
-      <input type="text" id="singleWord" placeholder="输入单个敏感词" value="测试词汇">
-      <button id="testAddWord">测试添加敏感词</button>
-      <div id="addWordResult" class="test-result"></div>
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-plus-circle"></i>
+            <h2>添加单个敏感词</h2>
+          </div>
+          <div class="form-group">
+            <label for="singleWord">敏感词</label>
+            <input type="text" id="singleWord" placeholder="输入一个敏感词">
+          </div>
+          <div class="form-group">
+            <button id="testAddWord" class="btn-primary">测试添加敏感词</button>
+            <div id="addWordResult" class="result hidden"></div>
+          </div>
+        </div>
 
-      <h3>测试 add_sensitive_words 函数</h3>
-      <textarea id="multipleWords" rows="3" placeholder="输入多个敏感词，每行一个">词汇1
-词汇2
-词汇3</textarea>
-      <button id="testAddWords">测试批量添加敏感词</button>
-      <div id="addWordsResult" class="test-result"></div>
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-list"></i>
+            <h2>批量添加敏感词</h2>
+          </div>
+          <div class="form-group">
+            <label for="multipleWords">敏感词列表（每行一个）</label>
+            <textarea id="multipleWords" rows="4" placeholder="输入多个敏感词，每行一个..."></textarea>
+          </div>
+          <div class="form-group">
+            <button id="testAddWords" class="btn-primary">测试批量添加</button>
+            <div id="addWordsResult" class="result hidden"></div>
+          </div>
+        </div>
 
-      <h3>测试 run_dfa_with_words 函数</h3>
-      <textarea id="testWords" rows="2" placeholder="输入敏感词，每行一个">测试词汇</textarea>
-      <input type="text" id="testText" placeholder="输入测试文本" value="这是一段包含测试词汇的文本">
-      <button id="testRunDfa">测试直接检测</button>
-      <div id="runDfaResult" class="test-result"></div>
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-filter"></i>
+            <h2>直接检测文本</h2>
+          </div>
+          <div class="form-group">
+            <label for="testWords">敏感词列表</label>
+            <textarea id="testWords" rows="3" placeholder="输入敏感词，每行一个..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="testText">待检测文本</label>
+            <textarea id="testText" rows="3" placeholder="输入要检测的文本..."></textarea>
+          </div>
+          <div class="form-group">
+            <button id="testRunDfa" class="btn-primary">测试检测</button>
+            <div id="runDfaResult" class="result hidden"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="card documentation">
+      <div class="card-header">
+        <i class="fas fa-book"></i>
+        <h2>使用文档</h2>
+      </div>
+
+      <div class="doc-section">
+        <h3>基本使用</h3>
+        <p>FSW-WASM-RUST是一个基于WebAssembly的高性能敏感词过滤工具。它使用确定有限自动机(DFA)算法来检测文本中是否包含预定义的敏感词。</p>
+        <ol>
+          <li>在"敏感词列表"文本框中输入或加载敏感词，每行一个词。</li>
+          <li>在"待检测文本"文本框中输入您要检测的文本内容。</li>
+          <li>点击"检测敏感词"按钮来运行检测。</li>
+          <li>结果将显示在下方，如果检测到敏感词，它们将被高亮显示。</li>
+        </ol>
+      </div>
+
+      <div class="doc-section">
+        <h3>API参考</h3>
+        <p>本工具暴露了以下JavaScript API，您可以在自己的项目中使用：</p>
+
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>函数</th>
+              <th>说明</th>
+              <th>参数</th>
+              <th>返回值</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>create_dfa()</code></td>
+              <td>创建一个新的DFA实例</td>
+              <td>无</td>
+              <td>DFA对象</td>
+            </tr>
+            <tr>
+              <td><code>add_sensitive_word(dfa, word)</code></td>
+              <td>向DFA添加单个敏感词</td>
+              <td>dfa: DFA对象<br>word: 字符串</td>
+              <td>无</td>
+            </tr>
+            <tr>
+              <td><code>add_sensitive_words(dfa, words)</code></td>
+              <td>向DFA批量添加敏感词</td>
+              <td>dfa: DFA对象<br>words: 字符串数组</td>
+              <td>布尔值，表示是否全部添加成功</td>
+            </tr>
+            <tr>
+              <td><code>run_dfa_with_words(text, words)</code></td>
+              <td>使用给定词汇检测文本</td>
+              <td>text: 待检测文本<br>words: 敏感词数组</td>
+              <td>布尔值，表示是否包含敏感词</td>
+            </tr>
+            <tr>
+              <td><code>dfa.is_sensitive(text)</code></td>
+              <td>检测DFA中是否包含敏感词</td>
+              <td>text: 待检测文本</td>
+              <td>布尔值，表示是否包含敏感词</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="doc-section">
+        <h3>使用示例</h3>
+        <pre><code>// 导入WebAssembly模块
+import * as wasm from './pkg/fsw_wasm_rust.js';
+
+// 初始化
+async function init() {
+  await wasm.default();
+  
+  // 创建DFA
+  const dfa = wasm.create_dfa();
+  
+  // 添加敏感词
+  wasm.add_sensitive_word(dfa, "敏感词1");
+  wasm.add_sensitive_word(dfa, "敏感词2");
+  
+  // 批量添加敏感词
+  const words = ["词汇1", "词汇2", "词汇3"];
+  wasm.add_sensitive_words(dfa, words);
+  
+  // 检测文本
+  const text = "这是一段包含敏感词1的文本";
+  const result = dfa.is_sensitive(text);
+  
+  console.log(result ? "包含敏感词" : "不包含敏感词");
+}
+
+init();</code></pre>
+      </div>
+
+      <div class="doc-section">
+        <h3>特性</h3>
+        <ul>
+          <li><strong>高性能</strong>：使用WebAssembly和Rust实现，性能出色</li>
+          <li><strong>跳词匹配</strong>：可以检测带干扰字符的敏感词，如"敏*感*词"</li>
+          <li><strong>轻量级</strong>：编译后的WASM文件体积小</li>
+          <li><strong>易于集成</strong>：简单的API设计，易于集成到现有项目</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer>
+      <p>FSW-WASM-RUST &copy; 2025 | 基于 Rust 开发的 WebAssembly 应用 敏感词检测工具 By LeviLiu</p>
+    </footer>
   </div>
 
-  <script type="module">
-    import init, { create_dfa, add_sensitive_word, add_sensitive_words, run_dfa_with_words } from './pkg/fsw_wasm_rust.js';
-    import { political, weapons, pornography, ads, websites } from './sensitiveWords.js';
 
-    async function main() {
-      await init();
 
-      const dfa = create_dfa();
-      const sensitiveWordsTextarea = document.getElementById('sensitiveWords');
+  <script type="module" src="index.js"></script>
 
-      // 添加不同类别敏感词的加载按钮
-      document.getElementById('loadPolitical').addEventListener('click', () => {
-        sensitiveWordsTextarea.value = political.join('\n');
-      });
-
-      document.getElementById('loadWeapons').addEventListener('click', () => {
-        sensitiveWordsTextarea.value = weapons.join('\n');
-      });
-
-      document.getElementById('loadPorn').addEventListener('click', () => {
-        sensitiveWordsTextarea.value = pornography.join('\n');
-      });
-
-      document.getElementById('loadAds').addEventListener('click', () => {
-        sensitiveWordsTextarea.value = ads.join('\n');
-      });
-
-      document.getElementById('loadWebsites').addEventListener('click', () => {
-        sensitiveWordsTextarea.value = websites.join('\n');
-      });
-
-      // 添加检测按钮事件处理
-      document.getElementById('checkButton').addEventListener('click', () => {
-        // 获取敏感词列表
-        const sensitiveWordsText = sensitiveWordsTextarea.value;
-        const sensitiveWords = sensitiveWordsText
-          .split('\n')
-          .map(word => word.trim())
-          .filter(word => word.length > 0);
-
-        // 获取待检测文本
-        const textToCheck = document.getElementById('textToCheck').value;
-
-        // 使用新接口检测
-        const isMatch = run_dfa_with_words(textToCheck, sensitiveWords);
-
-        // 显示结果
-        const resultElement = document.getElementById('result');
-        resultElement.textContent = isMatch
-          ? '⚠️ 检测到敏感内容'
-          : '✅ 文本安全';
-        resultElement.style.color = isMatch ? 'red' : 'green';
-      });
-
-      // 测试函数 - create_dfa
-      document.getElementById('testCreateDfa').addEventListener('click', () => {
-        try {
-          const testDfa = create_dfa();
-          document.getElementById('createDfaResult').textContent = "✅ DFA创建成功";
-          document.getElementById('createDfaResult').className = "test-result success";
-        } catch (error) {
-          document.getElementById('createDfaResult').textContent = "❌ 错误: " + error.message;
-          document.getElementById('createDfaResult').className = "test-result failure";
-        }
-      });
-
-      // 测试函数 - add_sensitive_word
-      document.getElementById('testAddWord').addEventListener('click', () => {
-        try {
-          const testDfa = create_dfa();
-          const word = document.getElementById('singleWord').value;
-          add_sensitive_word(testDfa, word);
-
-          // 测试添加的词是否生效
-          const testText = word;
-          const isMatch = testDfa.is_sensitive(testText);
-
-          if (isMatch) {
-            document.getElementById('addWordResult').textContent = `✅ 敏感词 "${word}" 添加成功并正常检测`;
-            document.getElementById('addWordResult').className = "test-result success";
-          } else {
-            document.getElementById('addWordResult').textContent = `❌ 敏感词添加失败，无法检测`;
-            document.getElementById('addWordResult').className = "test-result failure";
-          }
-        } catch (error) {
-          document.getElementById('addWordResult').textContent = "❌ 错误: " + error.message;
-          document.getElementById('addWordResult').className = "test-result failure";
-        }
-      });
-
-      // 测试函数 - add_sensitive_words
-      document.getElementById('testAddWords').addEventListener('click', () => {
-        try {
-          const testDfa = create_dfa();
-          const wordsText = document.getElementById('multipleWords').value;
-          const words = wordsText
-            .split('\n')
-            .map(w => w.trim())
-            .filter(w => w.length > 0);
-
-          const success = add_sensitive_words(testDfa, words);
-
-          // 测试添加的词是否全部生效
-          let allDetected = true;
-          let detectedCount = 0;
-
-          for (const word of words) {
-            if (testDfa.is_sensitive(word)) {
-              detectedCount++;
-            } else {
-              allDetected = false;
-            }
-          }
-
-          if (success && allDetected) {
-            document.getElementById('addWordsResult').textContent =
-              `✅ 全部 ${words.length} 个敏感词添加成功并正常检测`;
-            document.getElementById('addWordsResult').className = "test-result success";
-          } else {
-            document.getElementById('addWordsResult').textContent =
-              `⚠️ 添加了 ${detectedCount}/${words.length} 个敏感词，函数返回: ${success}`;
-            document.getElementById('addWordsResult').className = "test-result failure";
-          }
-        } catch (error) {
-          document.getElementById('addWordsResult').textContent = "❌ 错误: " + error.message;
-          document.getElementById('addWordsResult').className = "test-result failure";
-        }
-      });
-
-      // 测试函数 - run_dfa_with_words
-      document.getElementById('testRunDfa').addEventListener('click', () => {
-        try {
-          const wordsText = document.getElementById('testWords').value;
-          const words = wordsText
-            .split('\n')
-            .map(w => w.trim())
-            .filter(w => w.length > 0);
-
-          const testText = document.getElementById('testText').value;
-
-          const result = run_dfa_with_words(testText, words);
-
-          document.getElementById('runDfaResult').textContent =
-            result ? `✅ 检测成功: 文本中包含敏感词` : `✅ 检测成功: 文本中不包含敏感词`;
-          document.getElementById('runDfaResult').className = "test-result success";
-        } catch (error) {
-          document.getElementById('runDfaResult').textContent = "❌ 错误: " + error.message;
-          document.getElementById('runDfaResult').className = "test-result failure";
-        }
-      });
-    }
-
-    main();
-  </script>
 </body>
 
 </html>

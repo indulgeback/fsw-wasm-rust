@@ -1,5 +1,5 @@
 // 政治类敏感词
-export const political = [
+export const politicalWords = [
   "习近平",
   "平近习",
   "xjp",
@@ -329,7 +329,7 @@ export const political = [
 ]
 
 // 网址敏感词 (为简洁起见，这里只展示部分网址)
-export const websites = [
+export const websitesWords = [
   "3dw328.com",
   "3e5a2.redguarder8.com",
   "3eifj.cn",
@@ -382,7 +382,7 @@ export const websites = [
 ]
 
 // 涉枪涉爆违法信息关键词
-export const weapons = [
+export const weaponsWords = [
   "出售雷管",
   "炸药",
   "出售炸药",
@@ -467,7 +467,7 @@ export const weapons = [
 ]
 
 // 色情类敏感词
-export const pornography = [
+export const pornWords = [
   "爱液",
   "按摩棒",
   "拔出来",
@@ -641,7 +641,7 @@ export const pornography = [
 ]
 
 // 广告敏感词
-export const ads = [
+export const adsWords = [
   "兼职",
   "招聘",
   "网络",
@@ -769,11 +769,11 @@ export const ads = [
 
 // 组合所有敏感词
 export const allSensitiveWords = [
-  ...political,
-  ...pornography,
-  ...ads,
-  ...websites,
-  ...weapons,
+  ...politicalWords,
+  ...weaponsWords,
+  ...pornWords,
+  ...adsWords,
+  ...websitesWords,
 ]
 
 export default allSensitiveWords
