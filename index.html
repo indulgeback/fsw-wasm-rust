@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敏感词检测器 (测试版)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .section {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    #result,
+    .test-result {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+    }
+
+    button {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .failure {
+      color: red;
+    }
+
+    .test-panel {
+      background-color: #f5f5f5;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>敏感词检测工具</h1>
+
+    <div class="section">
+      <h3>敏感词库</h3>
+      <textarea id="sensitiveWords" rows="5" placeholder="输入敏感词，每行一个词...">
+</textarea>
+      <div>
+        <button id="loadPolitical">加载政治类敏感词</button>
+        <button id="loadWeapons">加载涉枪涉爆敏感词</button>
+        <button id="loadPorn">加载色情类敏感词</button>
+        <button id="loadAds">加载广告敏感词</button>
+        <button id="loadWebsites">加载网站敏感词</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>待检测文本</h3>
+      <textarea id="textToCheck" rows="5" placeholder="输入要检查的文本..."></textarea>
+      <button id="checkButton">检查文本</button>
+      <div id="result"></div>
+    </div>
+
+    <h2>函数测试面板</h2>
+    <div class="test-panel">
+      <h3>测试 create_dfa 函数</h3>
+      <button id="testCreateDfa">测试创建DFA</button>
+      <div id="createDfaResult" class="test-result"></div>
+
+      <h3>测试 add_sensitive_word 函数</h3>
+      <input type="text" id="singleWord" placeholder="输入单个敏感词" value="测试词汇">
+      <button id="testAddWord">测试添加敏感词</button>
+      <div id="addWordResult" class="test-result"></div>
+
+      <h3>测试 add_sensitive_words 函数</h3>
+      <textarea id="multipleWords" rows="3" placeholder="输入多个敏感词，每行一个">词汇1
+词汇2
+词汇3</textarea>
+      <button id="testAddWords">测试批量添加敏感词</button>
+      <div id="addWordsResult" class="test-result"></div>
+
+      <h3>测试 run_dfa_with_words 函数</h3>
+      <textarea id="testWords" rows="2" placeholder="输入敏感词，每行一个">测试词汇</textarea>
+      <input type="text" id="testText" placeholder="输入测试文本" value="这是一段包含测试词汇的文本">
+      <button id="testRunDfa">测试直接检测</button>
+      <div id="runDfaResult" class="test-result"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import init, { create_dfa, add_sensitive_word, add_sensitive_words, run_dfa_with_words } from './pkg/fsw_wasm_rust.js';
+    import { political, weapons, pornography, ads, websites } from './sensitiveWords.js';
+
+    async function main() {
+      await init();
+
+      const dfa = create_dfa();
+      const sensitiveWordsTextarea = document.getElementById('sensitiveWords');
+
+      // 添加不同类别敏感词的加载按钮
+      document.getElementById('loadPolitical').addEventListener('click', () => {
+        sensitiveWordsTextarea.value = political.join('\n');
+      });
+
+      document.getElementById('loadWeapons').addEventListener('click', () => {
+        sensitiveWordsTextarea.value = weapons.join('\n');
+      });
+
+      document.getElementById('loadPorn').addEventListener('click', () => {
+        sensitiveWordsTextarea.value = pornography.join('\n');
+      });
+
+      document.getElementById('loadAds').addEventListener('click', () => {
+        sensitiveWordsTextarea.value = ads.join('\n');
+      });
+
+      document.getElementById('loadWebsites').addEventListener('click', () => {
+        sensitiveWordsTextarea.value = websites.join('\n');
+      });
+
+      // 添加检测按钮事件处理
+      document.getElementById('checkButton').addEventListener('click', () => {
+        // 获取敏感词列表
+        const sensitiveWordsText = sensitiveWordsTextarea.value;
+        const sensitiveWords = sensitiveWordsText
+          .split('\n')
+          .map(word => word.trim())
+          .filter(word => word.length > 0);
+
+        // 获取待检测文本
+        const textToCheck = document.getElementById('textToCheck').value;
+
+        // 使用新接口检测
+        const isMatch = run_dfa_with_words(textToCheck, sensitiveWords);
+
+        // 显示结果
+        const resultElement = document.getElementById('result');
+        resultElement.textContent = isMatch
+          ? '⚠️ 检测到敏感内容'
+          : '✅ 文本安全';
+        resultElement.style.color = isMatch ? 'red' : 'green';
+      });
+
+      // 测试函数 - create_dfa
+      document.getElementById('testCreateDfa').addEventListener('click', () => {
+        try {
+          const testDfa = create_dfa();
+          document.getElementById('createDfaResult').textContent = "✅ DFA创建成功";
+          document.getElementById('createDfaResult').className = "test-result success";
+        } catch (error) {
+          document.getElementById('createDfaResult').textContent = "❌ 错误: " + error.message;
+          document.getElementById('createDfaResult').className = "test-result failure";
+        }
+      });
+
+      // 测试函数 - add_sensitive_word
+      document.getElementById('testAddWord').addEventListener('click', () => {
+        try {
+          const testDfa = create_dfa();
+          const word = document.getElementById('singleWord').value;
+          add_sensitive_word(testDfa, word);
+
+          // 测试添加的词是否生效
+          const testText = word;
+          const isMatch = testDfa.is_sensitive(testText);
+
+          if (isMatch) {
+            document.getElementById('addWordResult').textContent = `✅ 敏感词 "${word}" 添加成功并正常检测`;
+            document.getElementById('addWordResult').className = "test-result success";
+          } else {
+            document.getElementById('addWordResult').textContent = `❌ 敏感词添加失败，无法检测`;
+            document.getElementById('addWordResult').className = "test-result failure";
+          }
+        } catch (error) {
+          document.getElementById('addWordResult').textContent = "❌ 错误: " + error.message;
+          document.getElementById('addWordResult').className = "test-result failure";
+        }
+      });
+
+      // 测试函数 - add_sensitive_words
+      document.getElementById('testAddWords').addEventListener('click', () => {
+        try {
+          const testDfa = create_dfa();
+          const wordsText = document.getElementById('multipleWords').value;
+          const words = wordsText
+            .split('\n')
+            .map(w => w.trim())
+            .filter(w => w.length > 0);
+
+          const success = add_sensitive_words(testDfa, words);
+
+          // 测试添加的词是否全部生效
+          let allDetected = true;
+          let detectedCount = 0;
+
+          for (const word of words) {
+            if (testDfa.is_sensitive(word)) {
+              detectedCount++;
+            } else {
+              allDetected = false;
+            }
+          }
+
+          if (success && allDetected) {
+            document.getElementById('addWordsResult').textContent =
+              `✅ 全部 ${words.length} 个敏感词添加成功并正常检测`;
+            document.getElementById('addWordsResult').className = "test-result success";
+          } else {
+            document.getElementById('addWordsResult').textContent =
+              `⚠️ 添加了 ${detectedCount}/${words.length} 个敏感词，函数返回: ${success}`;
+            document.getElementById('addWordsResult').className = "test-result failure";
+          }
+        } catch (error) {
+          document.getElementById('addWordsResult').textContent = "❌ 错误: " + error.message;
+          document.getElementById('addWordsResult').className = "test-result failure";
+        }
+      });
+
+      // 测试函数 - run_dfa_with_words
+      document.getElementById('testRunDfa').addEventListener('click', () => {
+        try {
+          const wordsText = document.getElementById('testWords').value;
+          const words = wordsText
+            .split('\n')
+            .map(w => w.trim())
+            .filter(w => w.length > 0);
+
+          const testText = document.getElementById('testText').value;
+
+          const result = run_dfa_with_words(testText, words);
+
+          document.getElementById('runDfaResult').textContent =
+            result ? `✅ 检测成功: 文本中包含敏感词` : `✅ 检测成功: 文本中不包含敏感词`;
+          document.getElementById('runDfaResult').className = "test-result success";
+        } catch (error) {
+          document.getElementById('runDfaResult').textContent = "❌ 错误: " + error.message;
+          document.getElementById('runDfaResult').className = "test-result failure";
+        }
+      });
+    }
+
+    main();
+  </script>
+</body>
+
+</html>

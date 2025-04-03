@@ -3,12 +3,27 @@ name = "fsw-wasm-rust"
 description = "使用Rust的构建的WebAssembly，用于实现敏感词识别及过滤的DFA"
 version = "0.1.0"
 authors = ["liuwy <liuwenyu1937@outlook.com>"]
-keywords = ["wasm-pack", "WebAssembly", "wasm", ""]
+keywords = ["wasm-pack", "WebAssembly", "wasm"]
 edition = "2021"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wasm-bindgen = "0.2.99"
-encoding_rs_io = "0.1"
+encoding_rs_io = "0.1.7"
+wasm-bindgen = "0.2.87"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.37"
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies.console_error_panic_hook]
+version = "0.1.7"
+optional = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wee_alloc = { version = "0.4.5", optional = true }
