@@ -262,6 +262,82 @@ init();</code></pre>
           <li><strong>易于集成</strong>：简单的API设计，易于集成到现有项目</li>
         </ul>
       </div>
+
+      <div class="doc-section">
+        <h3>npm包安装</h3>
+        <p>FSW-WASM-RUST已发布为npm包，您可以通过以下方式安装和使用：</p>
+
+        <h4>安装</h4>
+        <pre><code>npm install fsw-wasm-rust
+# 或者使用yarn
+yarn add fsw-wasm-rust</code></pre>
+
+        <h4>在项目中使用</h4>
+        <pre><code>// 导入npm包
+import * as fswWasm from 'fsw-wasm-rust';
+
+// 初始化
+async function init() {
+  // 初始化WASM模块
+  await fswWasm.default();
+  
+  // 创建DFA实例
+  const dfa = fswWasm.create_dfa();
+  
+  // 添加敏感词
+  fswWasm.add_sensitive_word(dfa, "敏感词1");
+  
+  // 批量添加敏感词
+  const wordList = ["违禁词1", "违禁词2", "违禁词3"];
+  fswWasm.add_sensitive_words(dfa, wordList);
+  
+  // 检测文本
+  const text = "这是一段测试文本，包含敏感词1";
+  const result = dfa.is_sensitive(text);
+  console.log(result ? "包含敏感词" : "不包含敏感词");
+  
+  // 获取匹配的敏感词及位置
+  const matches = dfa.find_all_sensitive(text);
+  console.log("匹配结果:", matches);
+}
+
+init();</code></pre>
+
+        <h4>在浏览器中直接使用</h4>
+        <pre><code>&lt;script type="module"&gt;
+  import * as fswWasm from 'https://unpkg.com/fsw-wasm-rust/fsw_wasm_rust.js';
+  
+  async function init() {
+    await fswWasm.default();
+    
+    // 使用API进行敏感词检测
+    const dfa = fswWasm.create_dfa();
+    fswWasm.add_sensitive_word(dfa, "敏感词");
+    
+    const result = dfa.is_sensitive("这是敏感词测试");
+    console.log(result ? "包含敏感词" : "不包含敏感词");
+  }
+  
+  init();
+&lt;/script&gt;</code></pre>
+
+        <h4>在Node.js中使用</h4>
+        <pre><code>const fswWasm = require('fsw-wasm-rust');
+
+async function main() {
+  await fswWasm.default();
+  
+  const dfa = fswWasm.create_dfa();
+  fswWasm.add_sensitive_words(dfa, ["敏感词1", "敏感词2"]);
+  
+  const text = "这是一段测试文本";
+  const result = dfa.is_sensitive(text);
+  
+  console.log(result ? "包含敏感词" : "不包含敏感词");
+}
+
+main();</code></pre>
+      </div>
     </div>
 
     <footer>
@@ -269,10 +345,7 @@ init();</code></pre>
     </footer>
   </div>
 
-
-
   <script type="module" src="index.js"></script>
-
 </body>
 
 </html>
